@@ -3,14 +3,42 @@
 #include <vector>
 #include <algorithm>
 #include <deque>
+#include <SDL2/SDL_ttf.h>
+
+
 
 int main (int argc, char* argv[])
 {
     srand((unsigned int) time(NULL));
     SDL_Init( SDL_INIT_EVERYTHING );
     SDL_Window *window = SDL_CreateWindow("Hellow WOrld", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_ALLOW_HIGHDPI );
-    auto renderer = SDL_CreateRenderer(window, -1, 0);
+    static auto renderer = SDL_CreateRenderer(window, -1, 0);
+    //const int FONT_SIZE = 40;
+    //const char* FONT_NAME = "roboto.ttf";
+    int lives = 3;
+    int score = 0;
     SDL_Event event;
+
+    //for the text
+    /*
+    static SDL_Color TextColor = { 255, 0, 0, 255};
+    static SDL_Surface* TextSurface;
+    static SDL_Texture* TextTexture;
+    static SDL_Rect TextRect;
+    static const int FONT_SIZE = 40;
+    static const char* FONT_NAME = "roboto.ttf";
+    static SDL_Renderer* RENDERER2;
+    */
+
+    TTF_Font* Sans = TTF_OpenFont("Sans.ttf", 100);
+    SDL_Color White = { 255, 255, 255};
+    SDL_Surface* surfaceMessage = TTF_RenderText_Blended(Sans, "Test 12", White);
+    SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
+    SDL_Rect Message_rect;
+    Message_rect.x = 400;
+    Message_rect.y = 300;
+    Message_rect.w = 100;
+    Message_rect.h = 100;
 
     enum Direction{
         DOWN,
@@ -18,6 +46,32 @@ int main (int argc, char* argv[])
         RIGHT,
         UP
     };
+
+
+
+
+    /*class TextBot{
+        public:
+
+            void CreateText(const char* message){
+            TTF_Init();
+            TTF_Font *font = TTF_OpenFont(FONT_NAME, FONT_SIZE);
+            TextSurface = TTF_RenderText_Solid(font, message, TextColor);
+            TextTexture = SDL_CreateTextureFromSurface(RENDERER2, TextSurface);
+            TextRect.x = 800 - TextSurface->w * 0.5;
+            TextRect.y = 600 - TextSurface->h * 0.5;
+            TextRect.w = TextSurface->w;
+            TextRect.h = TextSurface->h;
+            SDL_FreeSurface(TextSurface);
+            TTF_Quit();
+            }
+            void RenderText(){
+                SDL_RenderCopy(renderer, TextTexture, NULL, &TextRect);
+                SDL_RenderPresent(renderer);
+                SDL_Delay(10);
+            }
+    };*/
+
 
     class Snakes {
         public:
@@ -64,10 +118,12 @@ int main (int argc, char* argv[])
             int count = 0;
             int foodGenNum = 10;
     };
-
+    //TextBot textbot;
     Snakes snake;
     Foods food;
     bool running = true;
+    //bool pause = false;
+  //  bool quit = false;
     int dir = 0;
     while (running)
     {
@@ -81,6 +137,7 @@ int main (int argc, char* argv[])
                 if(event.key.keysym.sym == SDLK_UP)     {dir = UP;      }
                 if(event.key.keysym.sym == SDLK_LEFT)   {dir = LEFT;    }
                 if(event.key.keysym.sym == SDLK_RIGHT)  {dir = RIGHT;   }
+               // if(event.key.keysym.sym == SDLK_ESCAPE) {pause = true;}
             }
         }
         //check dir of moving
@@ -98,13 +155,13 @@ int main (int argc, char* argv[])
             dir = 0;
         }
 
-
         //collision detection w food
         std::for_each(food.foodVector.begin(), food.foodVector.end(), [&](auto& entity)
         {
             if (snake.head.x == entity.x && snake.head.y == entity.y)
             {
                 snake.size += 5;
+                score += 10;
                 entity.x = -100;
                 entity.y = -100;
                 food.decrementCount();
@@ -116,15 +173,27 @@ int main (int argc, char* argv[])
         //collision detection w self
         std::for_each(snake.segments.begin(), snake.segments.end(), [&](auto& snakeSeg)
         {
-            if(snake.head.x == snakeSeg.x && snake.head.y == snakeSeg.y)
-            {
+            if(snake.head.x == snakeSeg.x && snake.head.y == snakeSeg.y){
+                lives --;
+                if (lives <= 0){
+                    //textbot.CreateText("your score is: " + score);
+                    //display the score screen.
+                    SDL_RenderClear(renderer);
+                    SDL_RenderCopy(renderer, Message, nullptr, &Message_rect);
+                    SDL_RenderPresent(renderer);
+                    SDL_Delay(1500);
+                    lives == 3;
+                    //textbot.RenderText();
+                }
                 snake.size = 1;
                 food.regenerate_food();
                 // placeholder for reset state/gameover
 
             }
         });
-
+        //if (lives == 0){
+         //   break;
+        //}
         //add newest head to snake
         snake.segments.push_front(snake.head);
 
@@ -139,12 +208,23 @@ int main (int argc, char* argv[])
         {
             snake.resetLocation();
             food.regenerate_food();
+            lives --;
+            if (lives <= 0){
+                    //display the score screen.
+                    SDL_RenderClear(renderer);
+                    SDL_RenderCopy(renderer, Message, nullptr, &Message_rect);
+                    SDL_RenderPresent(renderer);
+                    SDL_Delay(1500);
+                    lives = 3;
+                    //break;
+                    //return EXIT_SUCCESS;
+            }
         }
 
         //clear window
+
         SDL_SetRenderDrawColor(renderer, 0,0,0,255);
         SDL_RenderClear(renderer);
-
         //draw body
         SDL_SetRenderDrawColor(renderer, 255,255,255,255);
         std::for_each(snake.segments.begin(), snake.segments.end(), [&](auto& snakeSeg)
@@ -159,9 +239,15 @@ int main (int argc, char* argv[])
             SDL_RenderFillRect(renderer, &entity);
         });
 
+       // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        //SDL_RenderClear(renderer);
+       // SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
+        //SDL_RenderPresent(renderer);
+
         //display
         SDL_RenderPresent(renderer);
-        SDL_Delay(60);
+        SDL_Delay(60); //60
+
     }
 
     return EXIT_SUCCESS;
