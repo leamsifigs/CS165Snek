@@ -25,6 +25,12 @@ int main (int argc, char* argv[])
                 size = 1;
                 head = {400,300,10,10};
             }
+            void resetLocation() {
+                size = 1;
+                head.x = 400;
+                head.y = 300;
+            };
+
             SDL_Rect head;
             std::deque<SDL_Rect> segments;
             int size;
@@ -128,7 +134,12 @@ int main (int argc, char* argv[])
             snake.segments.pop_back();
         }
         
-
+        // colision detection with walls
+        if (snake.head.x == 0 || snake.head.y == 0 || snake.head.x == 800 || snake.head.y == 600)
+        {
+            snake.resetLocation();
+            food.regenerate_food();
+        }
 
         //clear window
         SDL_SetRenderDrawColor(renderer, 0,0,0,255);
