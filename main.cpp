@@ -6,6 +6,7 @@
 
 int main (int argc, char* argv[])
 {
+    srand((unsigned int) time(NULL));
     SDL_Init( SDL_INIT_EVERYTHING );
     SDL_Window *window = SDL_CreateWindow("Hellow WOrld", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_ALLOW_HIGHDPI );
     auto renderer = SDL_CreateRenderer(window, -1, 0);
