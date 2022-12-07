@@ -32,18 +32,31 @@ int main (int argc, char* argv[])
 
     class Foods {
         public:
-        // constructor
         Foods() {
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < foodGenNum; i++)
             {   
-                auto temp = SDL_Rect{rand()%100*10, rand()%100*10, 10, 10};
+                auto temp = SDL_Rect{rand()%80*10, rand()%60*10, 10, 10};
                 foodVector.emplace_back(temp);
-            }   
+            }
+            count = foodGenNum;   
         }
+        void regenerate_food() 
+            {
+                std::for_each(foodVector.begin(), foodVector.end(), [&](auto& entity) {
+                    entity.x = rand()%80*10;
+                    entity.y = rand()%60*10;
+                });
+                count = foodGenNum;
+            }
+        int     getCount()          {return count;}
+        void    decrementCount()    {count--;}
+        void    incrementCount()    {count++;}
+        int     getFoodGenNum()     {return foodGenNum;}
+        
         std::vector<SDL_Rect>foodVector;
         private:
-            //might use later to reset state
-            int count;
+            int count = 0;
+            int foodGenNum = 10;
     };
 
     Snakes snake;
@@ -88,7 +101,10 @@ int main (int argc, char* argv[])
                 snake.size += 5;
                 entity.x = -100;
                 entity.y = -100;
+                food.decrementCount();
             }
+
+            if (food.getCount() == 0) {food.regenerate_food();}
         } );
 
         //collision detection w self
@@ -97,7 +113,9 @@ int main (int argc, char* argv[])
             if(snake.head.x == snakeSeg.x && snake.head.y == snakeSeg.y)
             {
                 snake.size = 1;
+                food.regenerate_food();
                 // placeholder for reset state/gameover
+
             }
         });
 
