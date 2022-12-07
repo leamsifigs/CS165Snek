@@ -39,13 +39,6 @@ int main (int argc, char* argv[])
             //might use later to reset state
             int count;
     };
-    //food and foodgen 
-    // std::vector<SDL_Rect> food;
-    // for (int i = 0; i < 10; i++)
-    // {   
-    //     auto temp = SDL_Rect{rand()%100*10, rand()%100*10, 10, 10};
-    //     food.emplace_back(temp);
-    // }
 
     Foods food;
     bool running = true;
