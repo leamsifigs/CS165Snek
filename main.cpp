@@ -18,11 +18,16 @@ int main (int argc, char* argv[])
         UP
     };
 
-    SDL_Rect head{400,300,10,10};
-
-    //body of snake
-    std::deque<SDL_Rect> rectq;
-    int size = 1;
+    class Snakes {
+        public:
+            Snakes() {
+                size = 1;
+                head = {400,300,10,10};
+            }
+            SDL_Rect head;
+            std::deque<SDL_Rect> segments;
+            int size;
+    };
 
     class Foods {
         public:
@@ -40,6 +45,7 @@ int main (int argc, char* argv[])
             int count;
     };
 
+    Snakes snake;
     Foods food;
     bool running = true;
     int dir = 0;
@@ -61,13 +67,13 @@ int main (int argc, char* argv[])
         switch (dir)
         {
         case DOWN:
-            head.y += 10; break;
+            snake.head.y += 10; break;
         case UP:
-            head.y -= 10; break;
+            snake.head.y -= 10; break;
         case LEFT:
-            head.x -= 10; break;
+            snake.head.x -= 10; break;
         case RIGHT:
-            head.x += 10; break;
+            snake.head.x += 10; break;
         default:
             dir = 0;
         }
@@ -76,30 +82,31 @@ int main (int argc, char* argv[])
         //collision detection w food
         std::for_each(food.foodVector.begin(), food.foodVector.end(), [&](auto& entity)
         {
-            if (head.x == entity.x && head.y == entity.y)
+            if (snake.head.x == entity.x && snake.head.y == entity.y)
             {
-                size+=5;
+                snake.size += 5;
                 entity.x = -100;
                 entity.y = -100;
             }
         } );
 
         //collision detection w self
-        std::for_each(rectq.begin(), rectq.end(), [&](auto& snakeSeg)
+        std::for_each(snake.segments.begin(), snake.segments.end(), [&](auto& snakeSeg)
         {
-            if(head.x == snakeSeg.x && head.y == snakeSeg.y)
+            if(snake.head.x == snakeSeg.x && snake.head.y == snakeSeg.y)
             {
-                size = 1;
+                snake.size = 1;
+                // placeholder for reset state/gameover
             }
         });
 
         //add newest head to snake
-        rectq.push_front(head);
+        snake.segments.push_front(snake.head);
 
         // 
-        while (rectq.size() >size)
+        while (snake.segments.size() > snake.size)
         {
-            rectq.pop_back();
+            snake.segments.pop_back();
         }
         
 
@@ -110,7 +117,7 @@ int main (int argc, char* argv[])
 
         //draw body
         SDL_SetRenderDrawColor(renderer, 255,255,255,255);
-        std::for_each(rectq.begin(), rectq.end(), [&](auto& snakeSeg)
+        std::for_each(snake.segments.begin(), snake.segments.end(), [&](auto& snakeSeg)
         {
             SDL_RenderFillRect(renderer, &snakeSeg);
         });
