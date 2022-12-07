@@ -17,22 +17,30 @@ int main (int argc, char* argv[])
         RIGHT,
         UP
     };
-    
+
     SDL_Rect head{400,300,10,10};
 
     //body of snake
     std::deque<SDL_Rect> rectq;
     int size = 1;
 
+    class Foods {
+        public:
+        // constructor
+        Foods() {
+            for (int i = 0; i < 10; i++)
+            {   
+                auto temp = SDL_Rect{rand()%100*10, rand()%100*10, 10, 10};
+                foodVector.emplace_back(temp);
+            }   
+        }
+        std::vector<SDL_Rect>foodVector;
+        private:
+            //might use later to reset state
+            int count;
+    };
 
-    //food and foodgen 
-    std::vector<SDL_Rect> food;
-    for (int i = 0; i < 10; i++)
-    {   
-        auto temp = SDL_Rect{rand()%100*10, rand()%100*10, 10, 10};
-        food.emplace_back(temp);
-    }
-
+    Foods food;
     bool running = true;
     int dir = 0;
     while (running)
@@ -66,7 +74,7 @@ int main (int argc, char* argv[])
 
 
         //collision detection w food
-        std::for_each(food.begin(), food.end(), [&](auto& entity)
+        std::for_each(food.foodVector.begin(), food.foodVector.end(), [&](auto& entity)
         {
             if (head.x == entity.x && head.y == entity.y)
             {
@@ -109,7 +117,7 @@ int main (int argc, char* argv[])
 
         //draw food
         SDL_SetRenderDrawColor(renderer, 255,0,0,255);
-        std::for_each(food.begin(), food.end(), [&](auto& entity)
+        std::for_each(food.foodVector.begin(), food.foodVector.end(), [&](auto& entity)
         {
             SDL_RenderFillRect(renderer, &entity);
         });
